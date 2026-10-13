@@ -154,6 +154,19 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     document.documentElement.style.setProperty('--secondary', '#010211');
   }, [webSettings]);
 
+  // Dynamic favicon from admin (Brand & Web Settings → Favicon Logo)
+  useEffect(() => {
+    const icon = (webSettings as any)?.favicon_logo as string | undefined;
+    if (!icon || typeof document === 'undefined') return;
+    let link = document.querySelector("link[rel='icon']") as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    if (link.href !== icon) link.href = icon;
+  }, [webSettings]);
+
   if (isWebSettingsLoading) {
     return <PageLoader />
   }
