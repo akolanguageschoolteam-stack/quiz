@@ -1,0 +1,29 @@
+<IfModule mod_dir.c>
+    # Next writes both a same-name directory (RSC payload files) and a
+    # <route>.html file for every route. Without this, Apache's own
+    # directory-slash redirect fires before our RewriteRules run and
+    # fights the rule below -> redirect loop.
+    DirectorySlash Off
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # real static files (assets, _next/*, images, etc.) - serve as-is
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # drop trailing slash: /play-area/quiz-zone/ -> /play-area/quiz-zone
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.+)/$ /$1 [L,R=301]
+
+    # /profile -> /profile.html, /play-area/quiz-zone/play -> /play-area/quiz-zone/play.html
+    # checked before the -d directory case below, since Next also creates a same-name
+    # directory for nested routes (e.g. play-area/quiz-zone/play, .../result)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME}.html -f
+    RewriteRule ^(.*)$ $1.html [L]
+</IfModule>
+
+ErrorDocument 404 /404.html
